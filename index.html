@@ -6,17 +6,19 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="style.css"></link>
-  </head>
+ 
+  <!-- Got this code on https://www.w3schools.com/howto/howto_js_topnav_responsive.asp -->
+  <!-- Load an icon library to show a hamburger menu (bars) on small screens -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+</head>
 <body>
 
-    <!-- Got this code on https://www.w3schools.com/howto/howto_js_topnav_responsive.asp -->
-   <!-- Load an icon library to show a hamburger menu (bars) on small screens -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-
+  <!-- Header and navigation -->
+  <!-- The code was adapted from w3schools.com-->
 <div class="topnav" id="myTopnav">
-    <h1>Dashboard Visualisation of Mean Income</h1>
+    <h1>Dashboard Visualisation of Median Income for South African Municipalities</h1>
     <a href="#contact">Contact</a>
-    <a href="#download">Download data</a>
+    <a href="#data/Municipal_MedianIncome.csv">Download data</a>
     <a hred="#home" class="active">Home</a>
   
   
@@ -25,11 +27,76 @@
   </a>
 </div>
 
-<div id="chart"></div>
+<!-- Div section after top navigation bar-->
+<div class="main" id="home">
+
+  <!-- Filters -->
+   <!-- First filer is to filter the provinces-->
+   <div class="filters">
+    <label for="provinceSelect">Province:</label>
+    <select id="provinceSelect" onchange="updateDashboard()">
+      <option value="All">All provinces</option>
+      <option value="Eastern Cape">Eastern Cape</option>
+      <option value="Free State">Free State</option>
+      <option value="Gauteng">Gauteng</option>
+      <option value="KwaZulu-Natal">KwaZulu Natal</option>
+      <option value="Limpopo">Limpopo</option>
+      <option value="Mpumalanga">Mpumalanga</option>
+      <option value="North West">North West</option>
+      <option value="Northern Cape">Northern Cape</option>
+      <option value="Western Cape">Western Cape</option>
+    </select>
+
+    <!--Second filter is to filter the years-->
+    <label for="yearSelect">Year:</label>
+    <select id="yearSelect" onchange="updateDashboard()">
+      <option>2025</option>
+      <option>2024</option>
+      <option>2023</option>
+      <option>2022</option>
+      <option>2021</option>
+      <option>2020</option>
+      <option>2019</option>
+      <option>2018</option>
+      <option>2017</option>
+      <option>2016</option>
+      <option>2015</option>
+      <option>2014</option>
+    </select>
+   </div>
+
+   <!--Summary statistics-->
+   <div class="cards">
+    <div class="card">
+      <p>Average median income</p>
+      <h2 id="avgIncome">-</h2>
+      <p id="municipalityCount"></p>
+    </div>
+    <div class="card">
+      <p>Total FTE employees</p>
+      <h2 id="totalFTE">-</h2>
+    </div>
+    <div class="card">
+      <p>Highest median income</p>
+      <h2 id="highest">-</h2>
+      <p id="highestName"></p>
+    </div>
+  </div>
+
+</div>
+
+
+<!-- Chart. Got this code from https://www.w3schools.com/ai/ai_chartjs.asp-->
+<canvas id="myChart" style="width:100%;max-width:700px"></canvas>
 
 <div class="bottom">
   <h5>Anoeska Hood<br>u24671470<br>University of Pretoria, GMA320</h5>
 </div>
+
+
+<script
+src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js">
+</script>
 
 <!-- Link javascript-->
 <script src="script.js"></script>
