@@ -13,6 +13,7 @@ body {
 
 .topnav h1 {
   float: left;
+  margin: 0;
   color: #f2f2f2;
   padding: 14px 16px;
   font-size: 17px;
@@ -68,10 +69,22 @@ body {
   padding: 8px 16px;
 }
 
+.bottom a {
+  color: white;
+}
+
 
 /* Main content area */
 .main {
   padding: 16px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.main > p {
+  color: #555;
+  line-height: 1.5;
+  margin-top: 0;
 }
 
 /* Filters */
@@ -98,6 +111,8 @@ body {
   border-top: 4px solid #04AA6D;
   padding: 10px 16px;
   min-width: 0;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
 .card p {
