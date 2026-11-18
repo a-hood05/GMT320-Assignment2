@@ -18,7 +18,7 @@ var lineChart;
 var provinceChart;
 var topChart;
 //Store the provinces as a list so that it is easier to reference
-var provinces = ['Eastern Cape', 'Free State', 'Gauteng', 'KwaZulu Natal', 'Limpopo', 'Mpumalanga', 'Noeth West', 'Northern Cape', 'Western Cape'];
+var provinces = ['Eastern Cape', 'Free State', 'Gauteng', 'KwaZulu-Natal', 'Limpopo', 'Mpumalanga', 'North West', 'Northern Cape', 'Western Cape'];
 //Also store the years as varaibles so that it is easier to reference
 var years =[2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025];
 
@@ -107,6 +107,11 @@ function getHighest(rows) {
     }
   }
   return highest;
+}
+
+// Makes numbers look nice, e.g. 13531.2 -> "13 531"
+function formatNumber(number) {
+  return Math.round(number).toLocaleString("en-ZA");
 }
 
 //Create the charts
