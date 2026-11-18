@@ -36,4 +36,49 @@ function getProvince(code) {
   return "Unknown";
 }
 
+//Load the csv file
+// fetch() idea from https://www.w3schools.com/js/js_api_fetch.asp
+fetch("data/Municipal_MedianIncome.csv")
+  .then(function (response) {
+    return response.text();
+  })
+  .then(function (text) {
+    // split the text into lines, then each line into its columns
+    var lines = text.trim().split("\n");
+
+    for (var i = 1; i < lines.length; i++) {   // start at 1 to skip the header row
+      var columns = lines[i].split(",");
+      var code = columns[0];
+      var province = getProvince(code);
+
+      // skip the "Unknown Location - Head Office Anomaly" rows
+      if (province == "Unknown") {
+        continue;
+      }
+
+      data.push({
+        code: code,
+        province: province,
+        year: Number(columns[1]),
+        income: Number(columns[2]),
+        fte: Number(columns[3])
+      });
+    }
+
+    console.log("Rows loaded: " + data.length);
+    makeCharts();
+    updateDashboard();
+  });
+
+  //filter the data with filterData function
+  function filterData(province, year) {
+  var result = [];
+  for (var i = 0; i < data.length; i++) {
+    var row = data[i];
+    if ((province == "All" || row.province == province) && row.year == year) {
+      result.push(row);
+    }
+  }
+  return result;
+}
 
