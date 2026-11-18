@@ -82,3 +82,140 @@ fetch("data/Municipal_MedianIncome.csv")
   return result;
 }
 
+//Summary statistcs
+function getAverage(rows) {
+  var total = 0;
+  for (var i = 0; i < rows.length; i++) {
+    total = total + rows[i].income;
+  }
+  return total / rows.length;
+}
+
+function getTotalFTE(rows) {
+  var total = 0;
+  for (var i = 0; i < rows.length; i++) {
+    total = total + rows[i].fte;
+  }
+  return total;
+}
+
+function getHighest(rows) {
+  var highest = rows[0];
+  for (var i = 1; i < rows.length; i++) {
+    if (rows[i].income > highest.income) {
+      highest = rows[i];
+    }
+  }
+  return highest;
+}
+
+//Create the charts
+//The code is based on https://www.w3schools.com/ai/ai_chartjs.asp
+function makeCharts() {
+  // Line chart: income over the years
+  lineChart = new Chart("lineChart", {
+    type: "line",
+    data: {
+      labels: years,
+      datasets: [{
+        label: "Average median income (R)",
+        data: [],
+        borderColor: "#2a78d6",
+        fill: false
+      }]
+    },
+    options: {
+      maintainAspectRatio: false,
+      legend: { display: false }
+    }
+  });
+
+  // Bar chart: compare the provinces
+  provinceChart = new Chart("provinceChart", {
+    type: "bar",
+    data: {
+      labels: provinces,
+      datasets: [{
+        label: "Average median income (R)",
+        data: [],
+        backgroundColor: []
+      }]
+    },
+    options: {
+      maintainAspectRatio: false,
+      legend: { display: false },
+      scales: { yAxes: [{ ticks: { beginAtZero: true } }] }
+    }
+  });
+
+  // Horizontal bar chart: top 10 municipalities
+  topChart = new Chart("topChart", {
+    type: "horizontalBar",
+    data: {
+      labels: [],
+      datasets: [{
+        label: "Median income (R)",
+        data: [],
+        backgroundColor: "#04AA6D"
+      }]
+    },
+    options: {
+      maintainAspectRatio: false,
+      legend: { display: false },
+      scales: { xAxes: [{ ticks: { beginAtZero: true } }] }
+    }
+  });
+}
+
+//Now everything needs to update when filters change
+function updateDashboard() {
+  var province = document.getElementById("provinceSelect").value;
+  var year = Number(document.getElementById("yearSelect").value);
+  var rows = filterData(province, year);
+
+  // The summary stats also needs to update as the filters are updated
+  var highest = getHighest(rows);
+  document.getElementById("avgIncome").innerHTML = "R " + formatNumber(getAverage(rows));
+  document.getElementById("totalFTE").innerHTML = formatNumber(getTotalFTE(rows));
+  document.getElementById("highest").innerHTML = "R " + formatNumber(highest.income);
+  document.getElementById("highestName").innerHTML = highest.code + " (" + highest.province + ")";
+  document.getElementById("municipalityCount").innerHTML = rows.length + " municipalities";
+
+  //every chart also needs to update according to the filter
+  //Line chart: average for every year and province selected in the filters
+  var yearAverages = [];
+  for (var i = 0; i < years.length; i++) {
+    yearAverages.push(getAverage(filterData(province, years[i])));
+  }
+  lineChart.data.datasets[0].data = yearAverages;
+  lineChart.update();
+
+  //Bar chart: average for every province snd selected one should appear in a darker colour
+  var provinceAverages = [];
+  var colours = [];
+  for (var j = 0; j < provinces.length; j++) {
+    provinceAverages.push(getAverage(filterData(provinces[j], year)));
+    if (provinces[j] == province) {
+      colours.push("#184f95");
+    } else {
+      colours.push("#2a78d6");
+    }
+  }
+  provinceChart.data.datasets[0].data = provinceAverages;
+  provinceChart.data.datasets[0].backgroundColor = colours;
+  provinceChart.update();
+
+  // Top 10 chart: sort from highest to lowest and keep the first 10 and should be updated according to the province selected
+  // sort() from https://www.w3schools.com/js/js_array_sort.asp
+  rows.sort(function (a, b) { return b.income - a.income; });
+  var names = [];
+  var incomes = [];
+  for (var k = 0; k < 10 && k < rows.length; k++) {
+    names.push(rows[k].code);
+    incomes.push(rows[k].income);
+  }
+  topChart.data.labels = names;
+  topChart.data.datasets[0].data = incomes;
+  topChart.update();
+}
+
