@@ -10,6 +10,8 @@
   <!-- Got this code on https://www.w3schools.com/howto/howto_js_topnav_responsive.asp -->
   <!-- Load an icon library to show a hamburger menu (bars) on small screens -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <!-- Leaflet for the map (https://leafletjs.com/examples/quick-start/) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 </head>
 <body>
 
@@ -88,7 +90,7 @@
   <!-- Charts. Got the Chart.js code from https://www.w3schools.com/ai/ai_chartjs.asp -->
   <div class="charts">
     <div class="chart-box">
-      <h3>Average median income over time</h3>
+      <h3>Average median income over time: province vs South Africa</h3>
       <div class="chart-holder"><canvas id="lineChart"></canvas></div>
     </div>
     <div class="chart-box">
@@ -98,6 +100,10 @@
     <div class="chart-box wide">
       <h3>Top 10 municipalities by median income</h3>
       <div class="chart-holder"><canvas id="topChart"></canvas></div>
+    </div>
+     <div class="chart-box wide">
+      <h3>Median income per municipality</h3>
+      <div id="map"></div>
     </div>
   </div>
 
@@ -113,6 +119,9 @@
 <script
 src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js">
 </script>
+
+<!-- Leaflet library for the map -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <!-- Link javascript-->
 <script src="script.js"></script>
