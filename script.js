@@ -17,6 +17,11 @@ var data = [];
 var lineChart;
 var provinceChart;
 var topChart;
+//The map variables
+var map;
+var mapLayer;
+//Stores the name of every municipality (from the GeoJSON), e.g. municipalityNames["NC091"] = "Sol Plaatje"
+var municipalityNames = {};
 //Store the provinces as a list so that it is easier to reference
 var provinces = ['Eastern Cape', 'Free State', 'Gauteng', 'KwaZulu-Natal', 'Limpopo', 'Mpumalanga', 'North West', 'Northern Cape', 'Western Cape'];
 //Also store the years as varaibles so that it is easier to reference
@@ -66,6 +71,15 @@ fetch("data/Municipal_MedianIncome.csv")
     }
 
     console.log("Rows loaded: " + data.length);
+
+    // now load the municipality boundaries for the map
+    return fetch("data/municipalities.geojson");
+  })
+  .then(function (response) {
+    return response.json();
+  })
+  .then(function (geojson) {
+    makeMap(geojson);
     makeCharts();
     updateDashboard();
   });
@@ -109,9 +123,107 @@ function getHighest(rows) {
   return highest;
 }
 
-// Makes numbers look nice, e.g. 13531.2 -> "13 531"
+// Show numbers on charts
 function formatNumber(number) {
   return Math.round(number).toLocaleString("en-ZA");
+}
+
+//Find the row for one municipality in one year
+function findRow(code, year) {
+  for (var i = 0; i < data.length; i++) {
+    if (data[i].code == code && data[i].year == year) {
+      return data[i];
+    }
+  }
+  return null;
+}
+
+//Colour for the map: darker blue = higher median income
+//Based on the Leaflet choropleth tutorial https://leafletjs.com/examples/choropleth/
+function getColor(income) {
+  if (income > 24000) return "#104281";
+  if (income > 18000) return "#256abf";
+  if (income > 13000) return "#3987e5";
+  if (income > 10000) return "#6da7ec";
+  if (income > 7000)  return "#9ec5f4";
+  return "#cde2fb";
+}
+
+//Create the map
+//Based on https://leafletjs.com/examples/quick-start/ and https://leafletjs.com/examples/choropleth/
+function makeMap(geojson) {
+  // save the name of every municipality so the charts can show names instead of codes
+  for (var i = 0; i < geojson.features.length; i++) {
+    var properties = geojson.features[i].properties;
+    municipalityNames[properties.CAT_B] = properties.MUNICNAME;
+  }
+
+  // centre the map on South Africa
+  map = L.map("map").setView([-29, 25], 5);
+
+  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 12,
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+  }).addTo(map);
+
+  // add the municipalities (the colours are set later in updateMap)
+  mapLayer = L.geoJSON(geojson).addTo(map);
+
+  // popup when you click on a municipality
+  mapLayer.bindPopup(function (layer) {
+    var code = layer.feature.properties.CAT_B;
+    var year = Number(document.getElementById("yearSelect").value);
+    var row = findRow(code, year);
+    return "<b>" + municipalityNames[code] + "</b> (" + code + ")<br>" +
+           "Median income " + year + ": R " + formatNumber(row.income) + "<br>" +
+           "FTE employees: " + formatNumber(row.fte);
+  });
+
+  // legend
+  var legend = L.control({ position: "bottomright" });
+  legend.onAdd = function () {
+    var div = L.DomUtil.create("div", "legend");
+    var grades = [0, 7000, 10000, 13000, 18000, 24000];
+    div.innerHTML = "<b>Median income (R)</b><br>";
+    for (var i = 0; i < grades.length; i++) {
+      div.innerHTML += '<i style="background:' + getColor(grades[i] + 1) + '"></i> ';
+      if (i < grades.length - 1) {
+        div.innerHTML += formatNumber(grades[i]) + " – " + formatNumber(grades[i + 1]) + "<br>";
+      } else {
+        div.innerHTML += formatNumber(grades[i]) + "+";
+      }
+    }
+    return div;
+  };
+  legend.addTo(map);
+}
+
+//Update the map colours when the filters change
+function updateMap(province, year) {
+  mapLayer.setStyle(function (feature) {
+    var code = feature.properties.CAT_B;
+    var row = findRow(code, year);
+    var colour = getColor(row.income);
+
+    // municipalities outside the selected province are grey
+    if (province != "All" && row.province != province) {
+      colour = "#dddddd";
+    }
+    return { fillColor: colour, fillOpacity: 0.85, color: "white", weight: 1 };
+  });
+
+  // zoom to the selected province, or show the whole country
+  if (province == "All") {
+    map.setView([-29, 25], 5);
+  } else {
+    var bounds = L.latLngBounds([]);
+    mapLayer.eachLayer(function (layer) {
+      if (getProvince(layer.feature.properties.CAT_B) == province) {
+        bounds.extend(layer.getBounds());
+      }
+    });
+    map.fitBounds(bounds);
+  }
 }
 
 //Create the charts
@@ -183,7 +295,7 @@ function updateDashboard() {
   document.getElementById("avgIncome").innerHTML = "R " + formatNumber(getAverage(rows));
   document.getElementById("totalFTE").innerHTML = formatNumber(getTotalFTE(rows));
   document.getElementById("highest").innerHTML = "R " + formatNumber(highest.income);
-  document.getElementById("highestName").innerHTML = highest.code + " (" + highest.province + ")";
+  document.getElementById("highestName").innerHTML = municipalityNames[highest.code] + " (" + highest.province + ")";
   document.getElementById("municipalityCount").innerHTML = rows.length + " municipalities";
 
   //every chart also needs to update according to the filter
@@ -216,11 +328,14 @@ function updateDashboard() {
   var names = [];
   var incomes = [];
   for (var k = 0; k < 10 && k < rows.length; k++) {
-    names.push(rows[k].code);
+    names.push(municipalityNames[rows[k].code])
     incomes.push(rows[k].income);
   }
   topChart.data.labels = names;
   topChart.data.datasets[0].data = incomes;
   topChart.update();
+
+  // Map: colour each municipality for the selected year
+  updateMap(province, year);
 }
 
