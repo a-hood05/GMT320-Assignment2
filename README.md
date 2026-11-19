@@ -36,3 +36,15 @@ Source: SEAD_SA.
 Municipal_MedianIncome.csv structure: one row per municipality per tax year (2014-2025) with columns tax year, median income and number of FTE.
 municipalities.geojson: municipal boundaries. The shapefile was cleaned in QGIS and exported as a geojson.
 The rows labelled 'Unkown Location - Head Office Anomaly' are removed
+
+
+Folder structure:
+- index.html contains three sections, the heading and navigation bar, the visualisation area and footer. It links bootstrap 5's css, leaflet css, my style.css, chart.js as well as leaflet's and my own scripts.
+- style.css styles the navigation bar (adapted from w3schools), summary cards, charts, map legend and the footer.
+- script.js loads the csv and geojson files with fetch(), works out each municipality's province from its code, filters the data with loops and calculates the statistics. It also creates the charts and map and updates it.
+- The data folder contains the csv and geojson files.
+
+
+Credits:
+
+The responsive navigation bar, fetch(), sort(), css grid and chart.js examples were from w3schools. The charts.js 2.9.4 were also from https://www.chartjs.org. The map and legend were from leaflet documentation and tutorials (https://leafletjs.com/examples/choropleth/).
