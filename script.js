@@ -235,15 +235,24 @@ function makeCharts() {
     data: {
       labels: years,
       datasets: [{
-        label: "Average median income (R)",
+        label: "Selected province",
         data: [],
         borderColor: "#2a78d6",
-        fill: false
+        backgroundColor: "#2a78d6",
+        fill: false,
+        lineTension: 0
+      }, {
+        label: "South Africa",
+        data: [],
+        borderColor: "#eb6834",
+        backgroundColor: "#eb6834",
+        fill: false,
+        lineTension: 0
       }]
     },
     options: {
       maintainAspectRatio: false,
-      legend: { display: false }
+      legend: { display: true, position: "bottom" }
     }
   });
 
@@ -299,12 +308,24 @@ function updateDashboard() {
   document.getElementById("municipalityCount").innerHTML = rows.length + " municipalities";
 
   //every chart also needs to update according to the filter
-  //Line chart: average for every year and province selected in the filters
-  var yearAverages = [];
+  //Line chart: compare the selected province with the national average over the years
+  var provinceYearAverages = [];
+  var nationalYearAverages = [];
   for (var i = 0; i < years.length; i++) {
-    yearAverages.push(getAverage(filterData(province, years[i])));
+    provinceYearAverages.push(getAverage(filterData(province, years[i])));
+    nationalYearAverages.push(getAverage(filterData("All", years[i])));
   }
-  lineChart.data.datasets[0].data = yearAverages;
+
+  lineChart.data.datasets[0].data = provinceYearAverages;
+  lineChart.data.datasets[0].label = province;
+  lineChart.data.datasets[1].data = nationalYearAverages;
+
+  // if "All provinces" is selected, the province line would be the same as the national line, so hide it
+  if (province == "All") {
+    lineChart.data.datasets[0].hidden = true;
+  } else {
+    lineChart.data.datasets[0].hidden = false;
+  }
   lineChart.update();
 
   //Bar chart: average for every province snd selected one should appear in a darker colour
